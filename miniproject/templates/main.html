@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+  </head>
+    <title>LED</title>
+</head>
+<style>
+    .centeredit{
+        display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 40vh; /* จัดให้อยู่กลางแนวดิ่ง */
+    }
+    .btn-outline-success {
+    --bs-btn-color: #00FF00;
+    --bs-btn-border-color: #00FF00;
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: #00FF00;
+    --bs-btn-hover-border-color: #00FF00;
+    --bs-btn-focus-shadow-rgb: 25,135,84;
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: #00FF00;
+    --bs-btn-active-border-color: #00FF00;
+    --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+    --bs-btn-disabled-color: #00FF00;
+    --bs-btn-disabled-bg: transparent;
+    --bs-btn-disabled-border-color: #00FF00;
+    --bs-gradient: none;
+}
+.btn-clicked {
+    background-color: #00FF00; /* สีที่คุณต้องการให้ปุ่มเปลี่ยนเมื่อคลิก */
+    color: #fff; /* สีข้อความ */
+    border-color: #00FF00;
+}
+.btn-clicked:hover {
+    background-color: #FF0000; /* สีที่คุณต้องการให้ปุ่มเปลี่ยนเมื่อคลิก */
+    color: #fff; /* สีข้อความ */
+    border-color: #FF0000;
+}
+.btn-outline-danger {
+    --bs-btn-color: #FF0000;
+    --bs-btn-border-color: #FF0000;
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: #00FF00;
+    --bs-btn-hover-border-color: #00FF00;
+    --bs-btn-focus-shadow-rgb: 25,135,84;
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: #FF0000;
+    --bs-btn-active-border-color: #FF0000;
+    --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+    --bs-btn-disabled-color: #FF0000;
+    --bs-btn-disabled-bg: transparent;
+    --bs-btn-disabled-border-color: #FF0000;
+    --bs-gradient: none;
+}
+.coo{
+  color: #fff;
+}
+</style>
+<body style="background-color: #323232;">
+    <div class="container-file centeredit">
+        <h1 class="coo">MQTT Data: <span id="MqttData"></span></h1>
+    <div class="d-grid gap-2 col-6 mx-auto">
+        <button class="btn btn-outline-danger py-5 my-5" type="button" id="toggleButton" onclick="publishData()">CLOSE</button>
+        <!-- <button class="btn btn-outline-danger py-5" type="button" onclick="publishData()">CLOSE</button> -->
+      </div>
+      <p style="display: none;">LED State: <span id="ledState">Unknown</span></p>
+    </div>
+    <div class="container">
+      <h1 class="coo">I²C</h1>
+      <p class="coo">I2C เป็นระบบสื่อสารแบบคีย์เซอร์-คีย์เซอร์ (peer-to-peer) ที่ใช้ในการเชื่อมต่ออุปกรณ์อิเล็กทรอนิกส์เพื่อส่งข้อมูลระหว่างพวกมัน ระบบนี้ถูกพัฒนาขึ้นโดย Philips (ตอนนี้เป็น NXP Semiconductors) และใช้สายสัญญาณสองเส้นเพื่อการสื่อสาร.</p>
+      <p class="coo">การใช้งาน: I2C มักใช้ในการเชื่อมต่ออุปกรณ์ที่ต้องการการสื่อสารระหว่างบอร์ดหรืออุปกรณ์อิเล็กทรอนิกส์ เช่น การเชื่อมต่อกับเซน서์ (sensors), EEPROM, RTC (Real-Time Clock), และอุปกรณ์ต่างๆ ที่ต้องการการสื่อสารแบบต่อเนื่อง.</p>
+      <center>
+        <img src="https://miro.medium.com/v2/resize:fit:4800/format:webp/1*LWI7RsH2BoheWZX0r_71uQ.jpeg" alt="">
+      </center>
+
+      <h1 class="coo pt-5">UL</h1>
+      <p class="coo">UL (Ultrasonic) เป็นเทคโนโลยีที่ใช้คลื่นเสียงความถี่สูง (เสียงอัลตราโซนิก) เพื่อให้ข้อมูลหรือตรวจวัดระยะทาง การส่งคลื่นเสียงและการรับคลื่นเสียงนั้นสามารถใช้ในการวัดระยะทางโดยการนับเวลาที่คลื่นเสียงใช้ในการเสียงไปกลับระหว่างออปเจคและเซนเซอร์ UL.</p>
+      <p class="coo">การใช้งาน: UL มักใช้ในงานการวัดระยะทางและตรวจวัดอ็อบเจกต์ ตัวอย่างการใช้งานที่พบบ่อยคือเซนเซอร์หรือโมดูลเลเวลเอาต์อุปกรณ์และหุ่นยนต์ที่ต้องการประเมินระยะทางหรือตรวจจับวัตถุที่อยู่ใกล้เคียง.</p>
+
+      <h1 class="coo pt-5">เปรียบเทียบ I²C และ UL</h1>
+      <p class="coo">- I2C เป็นโปรโตคอลสื่อสารข้อมูลระหว่างอุปกรณ์อิเล็กทรอนิกส์และมีการใช้สายสัญญาณสองเส้นสำหรับการสื่อสาร ใช้สำหรับการเชื่อมต่อและส่งข้อมูลระหว่างอุปกรณ์</p>
+      <p class="coo">- UL (Ultrasonic) เป็นเทคโนโลยีการส่งและรับคลื่นเสียงเพื่อการวัดระยะทางหรือตรวจจับวัตถุ ไม่ใช้สำหรับการสื่อสารข้อมูลแบบดิจิทัลเหมือน I2C</p>
+      <p class="coo">ดังนั้น การเลือกใช้ I2C หรือ UL จะขึ้นอยู่กับงานหรือการแลกเปลี่ยนข้อมูลที่คุณต้องการให้ระบบของคุณทำงาน และความต้องการของคุณในการวัดระยะทางหรือการสื่อสารข้อมูลในแต่ละกรณีใช้งาน</p>
+
+      <center>
+        <h2 class="coo pt-5">จัดทำโดย</h2>
+        <h4 class="coo pt-2">น.ส.ชุติมา อ่อนนา 630406401370</h4>
+        <h4 class="coo">น.ส.ภัควลัญชญ์ จอดนอก 630406400563</h4>
+        <h4 class="coo">น.ส.รังสิมา นาวาผล 630406401291</h4>
+        <h4 class="coo pb-5">นาย ทิวธวัฒน์ สมอุ่มจาน 630406401404</h4>
+      </center>
+      
+      </div>
+
+    <script>
+     $(document).ready(function () {
+    $("#toggleButton").click(function (event) {
+        event.stopPropagation(); // ป้องกันการส่งคำสั่งไปยัง publishData()
+        $(this).toggleClass("btn-clicked");
+        if ($(this).hasClass("btn-clicked")) {
+            $(this).text("OPEN"); // เปลี่ยนข้อความปุ่ม
+        } else {
+            $(this).text("CLOSE"); // เปลี่ยนข้อความปุ่ม
+        }
+    });
+});
+      </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.3/socket.io.js"></script>
+    <script>
+      // Create a WebSocket connection to the server
+      const socket = io.connect(
+        "http://" + document.domain + ":" + location.port
+      );
+
+      socket.on("connect", function () {
+        console.log("Connected to server via WebSocket");
+      });
+
+      socket.on("mqtt_data", function (data) {
+        // Update the MQTT data in real-time
+        document.getElementById(
+          "MqttData"
+        ).textContent = `Sensor: ${data.Sensor}`;
+      });
+    </script>
+
+  <!-- Bootstrap JS and jQuery (optional) -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+  <!-- Add Bootstrap JavaScript (CDN or local) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.3/socket.io.js"></script>
+
+  <script>
+    function publishData() {
+      fetch("/publish")
+        .then((response) => response.text())
+        .then((data) => {
+          console.log(data);
+          document.getElementById("ledState").textContent = data;
+        })
+        .catch((error) => console.error("ข้อผิดพลาด:", error));
+    }
+  </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
+</body>
+</html>
